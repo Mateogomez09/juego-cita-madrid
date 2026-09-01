@@ -58,9 +58,14 @@
     </div>
 
     <!-- Controles -->
-    <button id="next-btn" class="mt-10 w-full bg-gray-900 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg shadow-gray-900/20 active:scale-95 transition-all text-lg flex items-center justify-center gap-2">
-      Siguiente <span class="text-xl">→</span>
-    </button>
+    <div class="mt-10 flex gap-3 w-full">
+      <button id="prev-btn" class="flex-1 bg-white/80 text-gray-800 font-semibold py-4 rounded-2xl shadow-sm active:scale-95 transition-all text-base flex items-center justify-center opacity-50 cursor-not-allowed" disabled>
+        ← Atrás
+      </button>
+      <button id="next-btn" class="flex-[2] bg-gray-900 text-white font-semibold py-4 rounded-2xl shadow-lg shadow-gray-900/20 active:scale-95 transition-all text-lg flex items-center justify-center gap-2">
+        Siguiente →
+      </button>
+    </div>
   </div>
 
   <!-- Pantalla Final (Vacía) -->
@@ -94,6 +99,7 @@
     const progressBarEl = document.getElementById('progress-bar');
     const cardContentEl = document.getElementById('card-content');
     const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
     const gameContainer = document.getElementById('game-container');
     const endScreen = document.getElementById('end-screen');
 
@@ -102,6 +108,15 @@
         gameContainer.style.display = 'none';
         endScreen.style.display = 'block';
         return;
+      }
+
+      // Lógica botón Atrás
+      if (currentIndex === 0) {
+        prevBtn.disabled = true;
+        prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        prevBtn.disabled = false;
+        prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
 
       const q = questions[currentIndex];
@@ -124,6 +139,13 @@
     nextBtn.addEventListener('click', () => {
       currentIndex++;
       updateUI();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateUI();
+      }
     });
   </script>
 </body>
