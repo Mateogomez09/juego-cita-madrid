@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Conexión</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out forwards;
+    }
+    .fade-out {
+      animation: fadeOut 0.4s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-orange-50 via-red-50 to-rose-100 min-h-screen flex flex-col items-center justify-center p-6 text-gray-800 overflow-hidden">
+
+  <!-- Contenedor Principal -->
+  <div id="game-container" class="w-full max-w-sm flex flex-col items-center relative">
+    
+    <!-- Header -->
+    <div class="text-center mb-8 w-full">
+      <span id="phase-badge" class="inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-3 bg-orange-200 text-orange-800 transition-colors duration-300">
+        Fase 1: Romper el hielo
+      </span>
+      <div class="flex justify-between items-center px-2">
+        <h1 class="text-2xl font-bold text-gray-900">Nuestras Cartas</h1>
+        <span id="counter" class="text-sm font-medium text-gray-500">1 / 16</span>
+      </div>
+      <!-- Barra de progreso -->
+      <div class="w-full bg-gray-200 h-1.5 rounded-full mt-4 overflow-hidden">
+        <div id="progress-bar" class="bg-orange-500 h-full rounded-full transition-all duration-500" style="width: 6.25%"></div>
+      </div>
+    </div>
+
+    <!-- Carta -->
+    <div id="card-area" class="w-full aspect-[4/5] bg-white rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-white/50 p-8 flex flex-col items-center justify-center text-center relative card cursor-pointer overflow-hidden">
+      <!-- Decoración fondo -->
+      <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-orange-100 rounded-full blur-2xl opacity-50"></div>
+      <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-rose-100 rounded-full blur-2xl opacity-50"></div>
+      
+      <div id="card-content" class="z-10 fade-in flex flex-col items-center">
+        <span id="emoji" class="text-6xl mb-6 drop-shadow-md">🧟</span>
+        <p id="question" class="text-xl md:text-2xl font-medium leading-relaxed text-gray-800">
+          Si mañana hay un apocalipsis zombie, ¿quién sobreviviría más tiempo y por qué el otro moriría el primer día?
+        </p>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <button id="next-btn" class="mt-10 w-full bg-gray-900 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg shadow-gray-900/20 active:scale-95 transition-all text-lg flex items-center justify-center gap-2">
+      Siguiente Carta <span class="text-xl">→</span>
+    </button>
+  </div>
+
+  <!-- Pantalla Final (Oculta por defecto) -->
+  <div id="end-screen" class="hidden w-full max-w-sm text-center flex-col items-center justify-center fade-in">
+    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-xl mb-6 mx-auto">
+      <span class="text-5xl">✨</span>
+    </div>
+    <h2 class="text-3xl font-bold text-gray-900 mb-4">Fin del juego</h2>
+    <p class="text-sm font-medium text-rose-500 uppercase tracking-widest mt-8">Es tu momento</p>
+  </div>
+
+  <script>
+    const questions = [
+      // FASE 1
+      { q: "Si mañana hay un apocalipsis zombie, ¿quién sobreviviría más tiempo y por qué el otro moriría el primer día?", e: "🧟", phase: "Fase 1: Romper el hielo", color: "bg-orange-200 text-orange-800", bar: "bg-orange-500" },
+      { q: "¿En qué juego, deporte o tema estás 100% convencida de que me darías una paliza absoluta compitiendo?", e: "🏆", phase: "Fase 1: Romper el hielo", color: "bg-orange-200 text-orange-800", bar: "bg-orange-500" },
+      { q: "Si nos dieran 10 millones de euros pero tuviéramos que gastarlos por obligación en las próximas 24 horas, ¿qué haríamos exactamente?", e: "💸", phase: "Fase 1: Romper el hielo", color: "bg-orange-200 text-orange-800", bar: "bg-orange-500" },
+      { q: "Si tuvieses que comprar un regalo para mí que me representase perfectamente, ¿qué sería?", e: "🎁", phase: "Fase 1: Romper el hielo", color: "bg-orange-200 text-orange-800", bar: "bg-orange-500" },
+      { q: "Si mañana salimos en las noticias porque nos han detenido a los dos, ¿por qué malentendido absurdo asumiría todo el mundo que ha sido?", e: "🚔", phase: "Fase 1: Romper el hielo", color: "bg-orange-200 text-orange-800", bar: "bg-orange-500" },
+      { q: "Si pudiéramos colarnos esta noche en cualquier sitio de Madrid sin que nadie nos viera ni hubiera consecuencias, ¿dónde nos meteríamos?", e: "🌃", phase: "Fase 1: Romper el hielo", color: "bg-orange-200 text-orange-800", bar: "bg-orange-500" },
+      
+      // FASE 2
+      { q: "¿Cuál fue exactamente tu primera impresión de mí la primera vez que hablamos?", e: "👁️", phase: "Fase 2: Nuestro Lore", color: "bg-amber-200 text-amber-800", bar: "bg-amber-500" },
+      { q: "Desde que nos conocemos, ¿cuál es la manía o costumbre más rara que has notado que tengo?", e: "👀", phase: "Fase 2: Nuestro Lore", color: "bg-amber-200 text-amber-800", bar: "bg-amber-500" },
+      { q: "¿Qué es algo que pensabas de mí antes de conocerme bien y que luego ha resultado ser completamente distinto?", e: "🔄", phase: "Fase 2: Nuestro Lore", color: "bg-amber-200 text-amber-800", bar: "bg-amber-500" },
+      { q: "Dime un recuerdo, una frase o un detalle de nosotros que, cuando te acuerdas de repente, siempre te saca una sonrisa.", e: "😊", phase: "Fase 2: Nuestro Lore", color: "bg-amber-200 text-amber-800", bar: "bg-amber-500" },
+      { q: "Si pudieras conectarme a un detector de mentiras ahora mismo y hacerme una sola pregunta, ¿cuál sería?", e: "🤥", phase: "Fase 2: Nuestro Lore", color: "bg-amber-200 text-amber-800", bar: "bg-amber-500" },
+      
+      // FASE 3
+      { q: "Si mañana me despertara habiendo perdido la memoria, ¿cómo me explicarías exactamente qué somos ahora mismo y por qué nos hemos vuelto tan importantes el uno para el otro?", e: "🧠", phase: "Fase 3: Profundidad", color: "bg-rose-200 text-rose-800", bar: "bg-rose-500" },
+      { q: "¿Qué parte de ti sientes que solo puedes mostrar al 100% cuando estás a solas conmigo, y por qué crees que me la reservas a mí?", e: "🎭", phase: "Fase 3: Profundidad", color: "bg-rose-200 text-rose-800", bar: "bg-rose-500" },
+      { q: "Si pudieras guardar intacto para siempre un solo recuerdo de los que tenemos juntos hasta hoy, ¿cuál elegirías?", e: "📸", phase: "Fase 3: Profundidad", color: "bg-rose-200 text-rose-800", bar: "bg-rose-500" },
+      { q: "¿Qué es algo bueno que hayas pensado sobre mí alguna vez pero que nunca me has llegado a decir en voz alta?", e: "💭", phase: "Fase 3: Profundidad", color: "bg-rose-200 text-rose-800", bar: "bg-rose-500" },
+      { q: "¿Qué es lo que más tranquilidad o comodidad te transmite cuando pasamos tiempo juntos?", e: "🕊️", phase: "Fase 3: Profundidad", color: "bg-rose-200 text-rose-800", bar: "bg-rose-500" }
+    ];
+
+    let currentIndex = 0;
+    
+    const questionEl = document.getElementById('question');
+    const emojiEl = document.getElementById('emoji');
+    const phaseBadgeEl = document.getElementById('phase-badge');
+    const counterEl = document.getElementById('counter');
+    const progressBarEl = document.getElementById('progress-bar');
+    const cardContentEl = document.getElementById('card-content');
+    const nextBtn = document.getElementById('next-btn');
+    const gameContainer = document.getElementById('game-container');
+    const endScreen = document.getElementById('end-screen');
+
+    function updateUI() {
+      if (currentIndex >= questions.length) {
+        gameContainer.style.display = 'none';
+        endScreen.style.display = 'flex';
+        return;
+      }
+
+      const q = questions[currentIndex];
+      
+      cardContentEl.classList.remove('fade-in');
+      cardContentEl.classList.add('fade-out');
+      
+      setTimeout(() => {
+        questionEl.textContent = q.q;
+        emojiEl.textContent = q.e;
+        counterEl.textContent = `${currentIndex + 1} / ${questions.length}`;
+        phaseBadgeEl.textContent = q.phase;
+        
+        phaseBadgeEl.className = `inline-block px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-3 transition-colors duration-300 ${q.color}`;
+        progressBarEl.className = `h-full rounded-full transition-all duration-500 ${q.bar}`;
+        
+        const progress = ((currentIndex + 1) / questions.length) * 100;
+        progressBarEl.style.width = `${progress}%`;
+        
+        cardContentEl.classList.remove('fade-out');
+        cardContentEl.classList.add('fade-in');
+      }, 400); 
+    }
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex++;
+      updateUI();
+    });
+  </script>
+</body>
+</html>
